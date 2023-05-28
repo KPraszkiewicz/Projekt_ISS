@@ -24,10 +24,12 @@ deviceID = 0;  # 0 = open default camera
 apiID = cv2.CAP_ANY;  # 0 = autodetect default API
 
 # Klasy
-sarna = tk.BooleanVar()
-dzik = tk.BooleanVar()
+cat = tk.BooleanVar()
+dog = tk.BooleanVar()
 ptak = tk.BooleanVar()
-koza = tk.BooleanVar()
+cow = tk.BooleanVar()
+horse = tk.BooleanVar()
+sheep = tk.BooleanVar()
 wybrane_klasy = []
 
 # ESP32
@@ -67,14 +69,18 @@ c5.pack()
 
 l2 = tk.Label(start, text="Wybierz zwierzęta do wykrywania", bg="white")
 l2.pack()
-c6 = tk.Checkbutton(start, text="Sarna", variable=sarna, onvalue=True, offvalue=False, bg="white")
+c6 = tk.Checkbutton(start, text="Kot", variable=cat, onvalue=True, offvalue=False, bg="white")
 c6.pack()
-c7 = tk.Checkbutton(start, text="Dzik", variable=dzik, onvalue=True, offvalue=False, bg="white")
+c7 = tk.Checkbutton(start, text="Pies", variable=dog, onvalue=True, offvalue=False, bg="white")
 c7.pack()
 c8 = tk.Checkbutton(start, text="Ptak", variable=ptak, onvalue=True, offvalue=False, bg="white")
 c8.pack()
-c9 = tk.Checkbutton(start, text="Koza", variable=koza, onvalue=True, offvalue=False, bg="white")
+c9 = tk.Checkbutton(start, text="Krowa", variable=cow, onvalue=True, offvalue=False, bg="white")
 c9.pack()
+c10 = tk.Checkbutton(start, text="Koń", variable=horse, onvalue=True, offvalue=False, bg="white")
+c10.pack()
+c11 = tk.Checkbutton(start, text="Owca", variable=sheep, onvalue=True, offvalue=False, bg="white")
+c11.pack()
 
 b2 = tk.Button(start, text="Dalej", command=showPrediction, bg="white", foreground="black")
 b2.pack()
@@ -145,7 +151,7 @@ def process_img(img, wykrywane_klasy=None):
 
 def prep():
     global video, size, fps, out, canvas, ser,wybrane_klasy
-    if plik:
+    if plik.get():
         video = cv2.VideoCapture(nazwa_filmu_we.get())
     else:
         video = cv2.VideoCapture(deviceID, apiID)
@@ -154,9 +160,9 @@ def prep():
     size = (int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     fps = video.get(cv2.CAP_PROP_FPS)
     print(size, fps)
-    if zapisywanie:
+    if zapisywanie.get():
         out = cv2.VideoWriter('wyjscie.mp4', -1, fps, size)
-    if wyswietlanie:
+    if wyswietlanie.get():
         canvas = tk.Canvas(show, width=size[0], height=size[1])
         gui.geometry(str(size[0]) + 'x' + str(size[1] + 50))
         canvas.pack()
@@ -165,14 +171,18 @@ def prep():
 
     #wybieranie klas
     wybrane_klasy = []
-    #if sarna:
-    #    wybrane_klasy.append(classes.index("deer")) #- nie ma sarny
-    #if dzik :
-    #    wybrane_klasy.append(classes.index("boar")) #- nie ma dzika
+    if cat.get():
+        wybrane_klasy.append(classes.index("cat"))
+    if dog.get():
+        wybrane_klasy.append(classes.index("dog"))
     if ptak.get():
         wybrane_klasy.append(classes.index("bird"))
-    #if koza:
-    #    wybrane_klasy.append(classes.index("goat")) #- nie ma kozy
+    if horse.get():
+        wybrane_klasy.append(classes.index("horse"))
+    if cow.get():
+        wybrane_klasy.append(classes.index("cow"))
+    if sheep.get():
+        wybrane_klasy.append(classes.index("sheep"))
 
     if len(wybrane_klasy) == 0:
         wybrane_klasy = None
@@ -192,22 +202,22 @@ def detect():
             print(klasy_nazwy)
 
             # ############################
-            if zapisywanie:
+            if zapisywanie.get():
                 out.write(frame)
 
-            if wyswietlanie:
+            if wyswietlanie.get():
                 photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(frame))
                 canvas.create_image((0, 0), image=photo, anchor='nw')
                 canvas.update()
 
-            if sygnal:
+            if sygnal.get():
                 if len(klasy) > 0:
                     ser.write(b'1')
                 else:
                     ser.write(b'0')
         else:
             video.release()
-            if zapisywanie:
+            if zapisywanie.get():
                 out.release()
     show.after(1, detect)
 
